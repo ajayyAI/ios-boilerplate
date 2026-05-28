@@ -1,0 +1,114 @@
+name: Run tests
+
+on:
+  # Run on pull requests that target the main branch
+  pull_request:
+    branches: ["main"]
+
+  # Show a manual trigger button in the GitHub Actions UI
+  workflow_dispatch:
+
+env:
+  XCODE_VERSION: '26'
+  XCODE_PROJECT: TemplateApp.xcodeproj
+  SCHEME: TemplateApp
+  TEST_PLAN: AllTests
+  TEST_RESULT_BUNDLE: TestResults.xcresult
+
+  # iOS Simulator configuration
+  TEST_PLATFORM: 'iOS Simulator'
+  TEST_DEVICE_TYPE: 'iPhone 16'
+
+jobs:
+  build:
+    name: Run all tests
+    # To use the self-hosted runner, change to `runs-on: [self-hosted, macOS]`
+    runs-on: [macos-26]
+
+    env:
+      TEST_DEVICE_NAME: 'TestDevice'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Lint source code
+      uses: cirruslabs/swiftlint-action@v1
+      with:
+        version: latest
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: ${{ env.XCODE_VERSION }}
+
+    - name: Trust Xcode package plugins and macros
+      run: |
+        defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+        defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+    # Uncomment when using Cocoapods (legacy). Don't forget to change the `-project` flag to `-workspace` in the xcodebuild commands below.
+    # - name: Cache Cocoapods
+    #   uses: actions/cache@v5
+    #   id: cocoapods-cache
+    #   with:
+    #     path: Pods
+    #     key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-pods-
+
+    # - name: Install Cocoapods
+    #   if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+    #   run: |
+    #     pod install
+
+    - name: Cache Swift Package Manager dependencies
+      uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/SourcePackages
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+
+    - name: Install Swift packages
+      run: |
+        xcodebuild -project "${{ env.XCODE_PROJECT }}" \
+          -scheme "${{ env.SCHEME }}" \
+          -onlyUsePackageVersionsFromResolvedFile \
+          -resolvePackageDependencies \
+          -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages"
+
+    - name: Create iOS Simulator
+      # Usage: simctl create <name> <device type id> [<runtime id>]
+      # <name>            A name you choose for the new simulator. Example: "TestDevice".
+      # <device type id>  A valid available device type. Find these by running "xcrun simctl list devicetypes". Example: "iPhone 8".
+      # <runtime id>      A valid and available runtime. Find these by running "xcrun simctl list runtimes". Example: "iOS 18.6".
+      run: |
+        xcrun simctl create "${{ env.TEST_DEVICE_NAME }}" "${{ env.TEST_DEVICE_TYPE }}"
+
+    - name: Build for testing
+      run: |
+        xcodebuild build-for-testing \
+          -project "${{ env.XCODE_PROJECT }}" \
+          -scheme "${{ env.SCHEME }}" \
+          -destination "platform=${{ env.TEST_PLATFORM }},name=${{ env.TEST_DEVICE_NAME }}" \
+          -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages" \
+          -disableAutomaticPackageResolution
+
+    - name: Run tests
+      run: |
+        xcodebuild test-without-building \
+          -project "${{ env.XCODE_PROJECT }}" \
+          -scheme "${{ env.SCHEME }}" \
+          -testPlan "${{ env.TEST_PLAN }}" \
+          -destination "platform=${{ env.TEST_PLATFORM }},name=${{ env.TEST_DEVICE_NAME }}" \
+          -resultBundlePath "${{ env.TEST_RESULT_BUNDLE }}" \
+          -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages" \
+          -disableAutomaticPackageResolution
+
+    - name: Upload test result bundle
+      uses: actions/upload-artifact@v7
+      if: ${{ failure() }}
+      with:
+        name: ${{ env.SCHEME }}-${{ env.TEST_PLAN }}-${{ github.sha }}.xcresult
+        path: ${{ env.TEST_RESULT_BUNDLE }}
