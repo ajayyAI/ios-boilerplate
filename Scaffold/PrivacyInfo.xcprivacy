@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Required for App Store submission. Describes what THIS target does; each SDK
+	     ships its own manifest and Xcode aggregates them into the privacy report.
+
+	     Two things to revisit when you build on this:
+	     - NSPrivacyCollectedDataTypes is empty because the starter collects nothing.
+	       Configuring PostHog or Sentry does not change that on its own, but sending
+	       them an email, a user ID or a crash breadcrumb containing one does. Declare
+	       what you actually send.
+	     - Add an entry to NSPrivacyAccessedAPITypes for each required-reason API you
+	       start using. Apple's list is the source of truth; the linter in App Store
+	       Connect rejects the build if one is missing. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<!-- UserDefaultsKeyValueStore. CA92.1 = read and write values this same
+			     app wrote, which is all the store does. -->
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

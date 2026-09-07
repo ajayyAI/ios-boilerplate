@@ -1,0 +1,29 @@
+--swiftversion 6.3
+
+# Scope: our sources only. ref/ holds cloned reference repos.
+--exclude ref,.build,DerivedData,Pods
+
+# Layout
+--indent 4
+--maxwidth 120
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--closingparen balanced
+--trimwhitespace always
+
+# Organisation
+--importgrouping testable-bottom
+--marktypes never
+--extensionacl on-declarations
+
+# Disabled with reason
+--disable unusedArguments      # underscore-renaming reads worse in delegate signatures
+--disable redundantRawValues   # explicit raw values are load-bearing for Codable and API contracts
+
+# Enabled beyond defaults
+--enable isEmpty
+--enable blankLinesBetweenScopes
+--enable redundantParens
+--enable sortImports
+--enable wrapMultilineStatementBraces

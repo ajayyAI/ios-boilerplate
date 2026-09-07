@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # macos-26 ships Xcode 26.6 as default. Xcode 27 is still beta; the `xcode-27`
+  # runner image is preview-only with no SLA, so it is deliberately not used.
+  XCODE_VERSION: '26.6'
+
+jobs:
+  check:
+    name: make check
+    runs-on: macos-26
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+
+      - name: Cache Homebrew tools
+        uses: actions/cache@v6
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('Brewfile') }}
+
+      - name: Install pinned tools
+        run: brew bundle
+
+      - name: Cache Swift packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-spm-
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild -project Scaffold.xcodeproj -scheme Scaffold \
+            -onlyUsePackageVersionsFromResolvedFile -resolvePackageDependencies \
+            -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages"
+
+      # Runs the exact same gate developers run locally. One definition, two callers.
+      - name: Run the gate
+        run: make check
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: ${{ failure() }}
+        with:
+          name: TestResults-${{ github.sha }}.xcresult
+          path: TestResults.xcresult
+          retention-days: 7

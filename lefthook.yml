@@ -1,0 +1,36 @@
+# Install with: lefthook install
+pre-commit:
+  parallel: false
+  commands:
+    format:
+      glob: "*.swift"
+      run: swiftformat {staged_files}
+      stage_fixed: true
+    lint:
+      glob: "*.swift"
+      run: swiftlint lint --strict {staged_files}
+
+commit-msg:
+  commands:
+    conventional:
+      run: ./scripts/check-commit-msg.sh {1}
+
+# Pre-push is advisory, not a security control. `git push --no-verify` bypasses it,
+# and lefthook skips these jobs when it cannot compute a push file list — which
+# happens on force pushes and when local has diverged from the remote. Verified
+# against lefthook 2.1.12; `skip_empty` is not a recognised key and is dropped
+# silently by the parser, so do not reach for it.
+#
+# The control that actually holds is a server-side GitHub ruleset on main. See README.
+pre-push:
+  commands:
+    branch-protection:
+      run: |
+        branch="$(git rev-parse --abbrev-ref HEAD)"
+        if [ -z "${SKIP_BRANCH_PROTECTION:-}" ] && printf '%s' "$branch" | grep -qE '^(main|master)$'; then
+          echo "error: pushing directly to $branch is blocked."
+          echo "Create a branch, or set SKIP_BRANCH_PROTECTION=1 to override."
+          exit 1
+        fi
+    test:
+      run: make test
