@@ -1,0 +1,148 @@
+name: Deploy to TestFlight
+
+on:
+  # Uncomment to enable a nightly build
+  # schedule:
+  #   - cron: '0 2 * * 1-5' # run on weekdays at 2 AM UTC
+
+  # Show a manual trigger button in the GitHub Actions UI
+  workflow_dispatch:
+
+  # Trigger on pushes to release branches
+  push:
+    branches:
+      - 'release/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  XCODE_VERSION: '26.6'
+  XCODE_PROJECT: Scaffold.xcodeproj
+  SCHEME: Scaffold
+  ARCHIVE_PATH: Scaffold.xcarchive
+  EXPORT_OPTIONS_PLIST: ExportOptions.plist
+
+jobs:
+  build:
+    name: Deploy to TestFlight
+    # To use the self-hosted runner, change to `runs-on: [self-hosted, macOS]`
+    runs-on: [macos-26]
+    timeout-minutes: 60
+    env:
+      # Optional. Absent means the dSYM upload step is skipped.
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+
+    - name: Set up Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: ${{ env.XCODE_VERSION }}
+
+    - name: Trust Xcode package plugins and macros
+      run: |
+        defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+        defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+    # Uncomment when using Cocoapods (legacy). Don't forget to change the `-project` flag to `-workspace` in the xcodebuild commands below.
+    # - name: Cache Cocoapods
+    #   uses: actions/cache@v6
+    #   id: cocoapods-cache
+    #   with:
+    #     path: Pods
+    #     key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-pods-
+
+    # - name: Install Cocoapods
+    #   if: steps.cocoapods-cache.outputs.cache-hit != 'true'
+    #   run: |
+    #     pod install
+
+    - name: Cache Swift Package Manager dependencies
+      uses: actions/cache@v6
+      with:
+        path: ${{ runner.temp }}/SourcePackages
+        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-spm-
+
+    # Retried for the same reason as ci.yml: one flaky binary download must not fail
+    # a release build.
+    - name: Install Swift packages
+      run: |
+        for attempt in 1 2 3; do
+          xcodebuild -project "${{ env.XCODE_PROJECT }}" \
+            -scheme "${{ env.SCHEME }}" \
+            -onlyUsePackageVersionsFromResolvedFile \
+            -resolvePackageDependencies \
+            -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages" && exit 0
+          echo "resolve attempt $attempt failed; retrying"
+          sleep 15
+        done
+        exit 1
+
+    - name: Install code signing certificate
+      uses: "./.github/actions/code-signing-setup"
+      with:
+        build-certificate-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        p12-password: ${{ secrets.P12_PASSWORD }}
+        keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+
+    - name: Install App Store Connect API key
+      run: |
+        APP_STORE_CONNECT_API_KEY_PATH="${{ runner.temp }}/AuthKey.p8"
+        echo "APP_STORE_CONNECT_API_KEY_PATH=$APP_STORE_CONNECT_API_KEY_PATH" >> $GITHUB_ENV
+        echo -n "${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}" | base64 --decode -o "$APP_STORE_CONNECT_API_KEY_PATH"
+
+    - name: Archive build
+      run: |
+        xcodebuild clean archive \
+          -project "${{ env.XCODE_PROJECT }}" \
+          -scheme "${{ env.SCHEME }}" \
+          -destination generic/platform=iOS \
+          -archivePath "${{ runner.temp }}/${{ env.ARCHIVE_PATH }}" \
+          -allowProvisioningUpdates \
+          -authenticationKeyPath "${{ env.APP_STORE_CONNECT_API_KEY_PATH }}" \
+          -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
+          -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }} \
+          -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages" \
+          -disableAutomaticPackageResolution
+
+    - name: Upload to TestFlight
+      run: |
+        xcodebuild -exportArchive \
+          -allowProvisioningUpdates \
+          -authenticationKeyPath "${{ env.APP_STORE_CONNECT_API_KEY_PATH }}" \
+          -authenticationKeyID ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
+          -authenticationKeyIssuerID ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }} \
+          -archivePath "${{ runner.temp }}/${{ env.ARCHIVE_PATH }}" \
+          -exportPath ${{ env.ARCHIVE_PATH }} \
+          -exportOptionsPlist ${{ env.EXPORT_OPTIONS_PLIST }}
+
+    # Sentry needs the dSYMs to symbolicate crashes, and since Xcode 14 App Store
+    # Connect no longer lets you download them, so this is the only copy. The whole
+    # block is skipped when the three SENTRY_* secrets are absent, which keeps the
+    # workflow green for a clone that has not set Sentry up. `--wait` makes a broken
+    # upload fail the job instead of leaving crashes unsymbolicated in silence.
+    - name: Upload dSYMs to Sentry
+      if: ${{ env.SENTRY_AUTH_TOKEN != '' && env.SENTRY_ORG != '' && env.SENTRY_PROJECT != '' }}
+      run: |
+        curl -sL https://sentry.io/get-cli/ | SENTRY_CLI_VERSION=3.7.0 sh
+        sentry-cli debug-files upload --include-sources --wait \
+          "${{ runner.temp }}/${{ env.ARCHIVE_PATH }}/dSYMs"
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ env.SCHEME }}-${{ github.sha }}.xcarchive
+        path: ${{ runner.temp }}/${{ env.ARCHIVE_PATH }}

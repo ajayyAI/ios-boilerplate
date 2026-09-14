@@ -1,0 +1,27 @@
+{
+  "base": "en",
+  "match": "app",
+  "strings": {
+    "headline": {
+      "en": "Unlock everything",
+      "fr": "Débloquez tout",
+      "pt-BR": "Desbloqueie tudo",
+      "zh-Hans": "解锁全部功能",
+      "zh-Hant": "解鎖全部功能"
+    },
+    "cta_trial": {
+      "en": "Start {{ products.primary.trialPeriodText }} free trial",
+      "fr": "Commencer l'essai gratuit de {{ products.primary.trialPeriodText }}",
+      "pt-BR": "Iniciar teste grátis de {{ products.primary.trialPeriodText }}",
+      "zh-Hans": "开始 {{ products.primary.trialPeriodText }} 免费试用",
+      "zh-Hant": "開始 {{ products.primary.trialPeriodText }} 免費試用"
+    },
+    "cta_no_trial": {
+      "en": "Continue",
+      "fr": "Continuer",
+      "pt-BR": "Continuar",
+      "zh-Hans": "继续",
+      "zh-Hant": "繼續"
+    }
+  }
+}

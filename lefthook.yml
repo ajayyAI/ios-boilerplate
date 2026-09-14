@@ -1,0 +1,50 @@
+# Install with: lefthook install
+pre-commit:
+  parallel: false
+  commands:
+    format:
+      glob: "*.swift"
+      run: swiftformat {staged_files}
+      stage_fixed: true
+    lint:
+      glob: "*.swift"
+      run: swiftlint lint --strict {staged_files}
+
+commit-msg:
+  commands:
+    conventional:
+      run: ./scripts/check-commit-msg.sh {1}
+
+# Pre-push is advisory, not a security control. `git push --no-verify` bypasses it,
+# and lefthook skips these jobs when it cannot compute a push file list — which
+# happens on force pushes and when local has diverged from the remote. Verified
+# against lefthook 2.1.12; `skip_empty` is not a recognised key and is dropped
+# silently by the parser, so do not reach for it.
+#
+# The control that actually holds is a server-side GitHub ruleset on main. See README.
+pre-push:
+  commands:
+    # A starter cloned per app makes it easy to push app A's code at app B's remote.
+    # The app name in Shared.xcconfig must appear in the remote's repository name.
+    # The template itself is exempt: it still carries the rename script, which the
+    # README says to delete once an app has been named.
+    repo-guard:
+      run: |
+        app="$(sed -nE 's/^APP_NAME *= *([^ ]+).*/\1/p' Config/Shared.xcconfig)"
+        remote="$(git remote get-url origin 2>/dev/null | sed -E 's#.*/##; s#\.git$##')"
+        if [ -n "${SKIP_REPO_GUARD:-}" ] || [ -z "$remote" ] || [ -f scripts/rename-project.py ]; then exit 0; fi
+        if ! printf '%s' "$remote" | grep -qi -- "$app"; then
+          echo "error: APP_NAME is '$app' but origin is '$remote'. Wrong repo?"
+          echo "Set SKIP_REPO_GUARD=1 to override."
+          exit 1
+        fi
+    branch-protection:
+      run: |
+        branch="$(git rev-parse --abbrev-ref HEAD)"
+        if [ -z "${SKIP_BRANCH_PROTECTION:-}" ] && printf '%s' "$branch" | grep -qE '^(main|master)$'; then
+          echo "error: pushing directly to $branch is blocked."
+          echo "Create a branch, or set SKIP_BRANCH_PROTECTION=1 to override."
+          exit 1
+        fi
+    test:
+      run: make test

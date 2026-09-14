@@ -1,0 +1,51 @@
+{
+  "originHash" : "244301267d8bc2b198e9feda564bdf66020117b4477aa55c77662134585be4aa",
+  "pins" : [
+    {
+      "identity" : "factory",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/hmlongco/Factory.git",
+      "state" : {
+        "revision" : "b02457db582b6773c578f407e43350a15bf79cb6",
+        "version" : "3.4.0"
+      }
+    },
+    {
+      "identity" : "posthog-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/PostHog/posthog-ios.git",
+      "state" : {
+        "revision" : "567dd68b6a60b791a6577391a170fc7855f0c82e",
+        "version" : "3.79.1"
+      }
+    },
+    {
+      "identity" : "sentry-cocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/getsentry/sentry-cocoa.git",
+      "state" : {
+        "revision" : "d9df1c4e8d8466c7f8b3c56150378927dadf1b8e",
+        "version" : "9.29.0"
+      }
+    },
+    {
+      "identity" : "superscript-ios-next",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/superwall/superscript-ios-next",
+      "state" : {
+        "revision" : "c3d1ee8d23ae6bf27e2d261c41a61001281166ec",
+        "version" : "1.0.15"
+      }
+    },
+    {
+      "identity" : "superwall-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/superwall/Superwall-iOS.git",
+      "state" : {
+        "revision" : "a9990308209c27de2f3c74e666774f121149678e",
+        "version" : "4.16.3"
+      }
+    }
+  ],
+  "version" : 3
+}

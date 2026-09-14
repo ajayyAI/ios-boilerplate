@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "audit-xcode-security-settings": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "audit-xcode-security-settings/SKILL.md",
+      "computedHash": "01f8e211fb0b3ed9e3a93802ec2eda0714e6fc02cc5050aeb7afc6a3655051a4"
+    },
+    "ios-simulator-skill": {
+      "source": "conorluddy/ios-simulator-skill",
+      "sourceType": "github",
+      "skillPath": "ios-simulator-skill/skills/ios-simulator-skill/SKILL.md",
+      "computedHash": "06f2dd4f60e9b9a48d5dceb7f2657a74f78dbe4cd894a620b70724d9da0e2e26"
+    },
+    "swift-concurrency-pro": {
+      "source": "twostraws/Swift-Concurrency-Agent-Skill",
+      "sourceType": "github",
+      "skillPath": "swift-concurrency-pro/SKILL.md",
+      "computedHash": "db6c88d8da1a264188a2ad826a0ed73d227384315b27e47f3bb6b78ca1a3df40"
+    },
+    "swift-testing-pro": {
+      "source": "twostraws/Swift-Testing-Agent-Skill",
+      "sourceType": "github",
+      "skillPath": "swift-testing-pro/SKILL.md",
+      "computedHash": "576d9b4705c76262095e2470e99bb9a89324ac4467e7ee54b7032697a8789b3d"
+    },
+    "swiftui-specialist": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "swiftui-specialist/SKILL.md",
+      "computedHash": "3822a405011719e955934b3df69a3617fbda4aa86da6dbbed89912a86ed0b994"
+    },
+    "swiftui-whats-new-27": {
+      "source": "superagents-lab/xcode27-skills",
+      "sourceType": "github",
+      "skillPath": "swiftui-whats-new-27/SKILL.md",
+      "computedHash": "33c097354c14985ccf7571cfda16b79eabe5ef14db176aa349297341d25dd8d2"
+    }
+  }
+}
