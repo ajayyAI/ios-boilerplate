@@ -1,0 +1,47 @@
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+
+# Test output
+TestResults.xcresult/
+*.xcresult
+
+# Secrets and signing
+Config/Secrets.xcconfig
+*.mobileprovision
+*.p12
+*.p8
+*.cer
+*.certSigningRequest
+
+# Agent skills — restore with `npx skills experimental_install` (see skills-lock.json)
+.claude/
+.agents/
+
+# Local reference clones, research only
+ref/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log

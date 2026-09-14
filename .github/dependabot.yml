@@ -1,0 +1,35 @@
+# Tuned to be useful rather than noisy. The defaults open one PR per dependency per
+# week; with RevenueCat, Sentry and PostHog all shipping frequently that is several
+# PRs a week for a template nobody is actively developing.
+#
+# `groups` batches every non-major bump into a single PR, so a normal month is one
+# PR per ecosystem. Majors stay ungrouped because they need real migration work.
+#
+# `commit-message.prefix` matters: Dependabot's default subject ("Bump X from Y to
+# Z") is not a Conventional Commit, so squash-merging it would violate the rule
+# scripts/check-commit-msg.sh enforces on every other commit.
+version: 2
+updates:
+  - package-ecosystem: "swift"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      swift-dependencies:
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      github-actions:
+        update-types: ["minor", "patch", "major"]
