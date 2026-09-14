@@ -1,0 +1,20 @@
+project: Scaffold.xcodeproj
+schemes:
+  - Scaffold
+strict: true
+
+retain_public: false
+retain_objc_accessible: true
+retain_swift_ui_previews: true
+retain_assign_only_properties: true
+
+# This repo is a starter. Its shared surface is deliberately unused *by the
+# template* and exists for the apps cloned from it, so Periphery would report
+# all of it as dead. Retaining these directories keeps the scan meaningful over
+# Features/, which is where real dead code accumulates once an app is built.
+retain_files:
+  - "**/Shared/UI/**"
+  - "**/Core/Device/**"
+
+report_exclude:
+  - "**/Preview Content/**"

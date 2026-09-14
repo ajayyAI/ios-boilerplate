@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/ajayyAI/ios-boilerplate/discussions
+    about: Setup, configuration and architecture questions go to Discussions.
+  - name: Security vulnerability
+    url: https://github.com/ajayyAI/ios-boilerplate/security/advisories/new
+    about: Report privately. Never in a public issue.
