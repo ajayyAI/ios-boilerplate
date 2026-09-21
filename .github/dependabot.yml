@@ -1,5 +1,5 @@
 # Tuned to be useful rather than noisy. The defaults open one PR per dependency per
-# week; with RevenueCat, Sentry and PostHog all shipping frequently that is several
+# week; with Superwall, Sentry and PostHog all shipping frequently that is several
 # PRs a week for a template nobody is actively developing.
 #
 # `groups` batches every non-major bump into a single PR, so a normal month is one

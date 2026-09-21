@@ -68,7 +68,7 @@ body:
       label: Configured integrations
       description: Which keys are set in `Config/Secrets.xcconfig`?
       options:
-        - label: RevenueCat
+        - label: Superwall
         - label: Sentry
         - label: PostHog
         - label: None — no `Config/Secrets.xcconfig` at all

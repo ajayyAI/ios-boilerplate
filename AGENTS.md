@@ -74,16 +74,19 @@ the real clients without booting anything.
 
 Entitlement reads are fail-closed. A failure shows a retry, never the gated content.
 `PaywallGateTests` pins this; if a change makes a failed read grant access, that is a
-defect regardless of what else it fixes.
+defect regardless of what else it fixes. Superwall's `.unknown` status is a failed read,
+not "not subscribed". Only `SuperwallPurchaseClient` and `PaywallSheet` import
+`SuperwallKit`; everything else goes through `PurchaseClient`. Setup and the reasoning:
+[`docs/purchases.md`](docs/purchases.md).
 
 **A caught error is reported.** Every `catch` that renders an error also calls
 `crashReporter.report(error, context: "<Feature>.<action>")`. View models take
 `crashReporter` by initializer with the no-op as default. Cancellation is filtered
 inside `report`, so do not filter it at the call site.
 
-Events, screens and flags are closed enums (`AnalyticsEvent.Name`, `AnalyticsScreen`,
-`FeatureFlag`). Add a case; never pass a string. A new flag carries its default next
-to it. Details and the vendor decisions: [`docs/observability.md`](docs/observability.md).
+Events, screens, flags and paywall placements are closed enums (`AnalyticsEvent.Name`,
+`AnalyticsScreen`, `FeatureFlag`, `PaywallPlacement`). Add a case; never pass a string.
+A new flag carries its default next to it. Details and the vendor decisions: [`docs/observability.md`](docs/observability.md).
 
 Optional capabilities (widgets, push, HealthKit, deep links) have recipes in
 [`docs/recipes/`](docs/recipes/README.md). Follow the recipe; do not invent a layout.

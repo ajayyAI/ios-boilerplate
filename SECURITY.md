@@ -35,7 +35,7 @@ verifies the request came from a genuine build of your app.
 The keys this starter ships support are publishable client keys, designed to be
 extractable from a client:
 
-- `REVENUECAT_API_KEY` — RevenueCat SDK key
+- `SUPERWALL_API_KEY` — Superwall public API key
 - `SENTRY_DSN` — Sentry DSN
 - `POSTHOG_API_KEY` — PostHog project key
 

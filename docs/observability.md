@@ -90,14 +90,15 @@ manifest.
 
 ## Privacy manifest and nutrition labels
 
-[`PrivacyInfo.xcprivacy`](../Scaffold/PrivacyInfo.xcprivacy) declares what both SDKs
+[`PrivacyInfo.xcprivacy`](../Scaffold/PrivacyInfo.xcprivacy) declares what the SDKs
 collect once configured, all **not linked** and **not for tracking**. In App Store
 Connect, answer:
 
 - Diagnostics → Crash Data, Performance Data, Other Diagnostic Data (Sentry)
 - Usage Data → Product Interaction, Other Usage Data (PostHog)
+- Purchases → Purchase History (Superwall)
 
-Both purposes Analytics and App Functionality, not linked, not tracking. Two things
+Purposes are Analytics and App Functionality, not linked, not tracking. Two things
 change that: sending an email address (add Contact Info, linked) or a real user ID
 (add Identifiers → User ID, linked).
 

@@ -41,7 +41,7 @@ It passes on a clean checkout with no vendor accounts.
 |---|---|
 | **Swift 6, strict** | Main-actor default isolation, complete concurrency checking, warnings as errors, no suppressions. |
 | **One gate** | `make check` locally and in CI. Hooks format and lint staged Swift, enforce Conventional Commits, and run tests before push. |
-| **Fail-closed paywall** | A RevenueCat gate that never unlocks on a network error. Pinned by tests. |
+| **Fail-closed paywall** | A Superwall gate that never unlocks on a network error or an unresolved status. Pinned by tests. |
 | **Env-gated SDKs** | No key, no vendor. Every integration resolves to a no-op until configured, enforced by tests. |
 | **Observability** | Sentry with tracing, profiling, app hangs, MetricKit, masked replay on error and PII scrubbing. PostHog with feature flags and super properties. dSYMs uploaded from CI. Caught errors reach Sentry through one call. |
 | **Design system** | Semantic tokens for colour, spacing, radius and type. Press feedback that respects Reduce Motion. A five-word haptic vocabulary. |
@@ -130,7 +130,7 @@ Ships with `.buttonStyle(.primary)`, `.buttonStyle(.secondary)`, `.card()` and
 
 | Client | Backed by | Without a key |
 |---|---|---|
-| `PurchaseClient` | RevenueCat 5.88 | Nobody is entitled; SDK never configured |
+| `PurchaseClient` | Superwall 4.16 | Nobody is entitled; SDK never configured |
 | `AnalyticsClient` | PostHog 3.74 | Events dropped |
 | `FeatureFlagClient` | PostHog 3.74 | Every flag answers with its code default |
 | `CrashReporter` | Sentry 9.28 | Nothing reported |
@@ -143,8 +143,10 @@ inline. The decisions, the App Store privacy answers and the dSYM upload:
 [`docs/observability.md`](docs/observability.md).
 
 `PaywallGate` reads entitlement fail-closed. A failed read shows a retry, never the
-gated content. RevenueCat's own `presentPaywallIfNeeded` fails open, which is why the
-gate does its own read.
+gated content. Superwall reports `.unknown` until it has resolved the subscription, and
+the gate treats that as a failure to retry rather than as an answer. Paywalls are
+remote: the app names a `PaywallPlacement`, a campaign on the dashboard decides what
+appears there. Setup: [`docs/purchases.md`](docs/purchases.md).
 
 ## Testing
 

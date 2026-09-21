@@ -3,8 +3,7 @@
 //  Scaffold
 //
 
-import RevenueCat
-import RevenueCatUI
+import SuperwallKit
 import SwiftUI
 
 /// Wraps content that requires an active subscription.
@@ -12,12 +11,12 @@ import SwiftUI
 /// Four behaviours are why this is a reusable type rather than an `if` around a view:
 ///
 /// - Gated content renders only in `.entitled`. A failed entitlement read shows a retry,
-///   never the content. RevenueCatUI's own `presentPaywallIfNeeded` documents the opposite
-///   choice — "if loading the `CustomerInfo` fails, the paywall won't be displayed" — which
-///   means an offline device gets the paid experience for free.
+///   never the content. Superwall's own `register(placement:feature:)` can be configured
+///   the other way — a non-gated paywall, or no campaign match, runs the feature block —
+///   which suits a soft upsell and is the wrong default for content someone pays for.
 /// - A failure offers a way forward instead of dead-ending.
 /// - `hardPaywall` sends a dismissal back to the upsell screen rather than into the app.
-/// - Entitlement is read through `PurchaseClient`, never `Purchases.shared`, so the whole
+/// - Entitlement is read through `PurchaseClient`, never `Superwall.shared`, so the whole
 ///   decision is testable without the SDK.
 ///
 /// Wrapping the entire app in a `hardPaywall` gate requires a configured API key; with none
@@ -56,7 +55,7 @@ struct PaywallGate<Content: View>: View {
                 isPresented: $isPaywallPresented,
                 isHardPaywall: viewModel.isHardPaywallActive,
                 onDismiss: paywallDismissed,
-                paywall: { PaywallSheet(viewModel: viewModel) },
+                paywall: { PaywallSheet(viewModel: viewModel, close: { isPaywallPresented = false }) },
             ),
         )
         .accessibilityIdentifier("PaywallGate")
@@ -202,24 +201,46 @@ private struct PaywallGateFailureView: View {
 /// The remote-configured paywall.
 ///
 /// This is the only place in the feature that touches the SDK, and it never produces
-/// entitlement — both callbacks hand back to the view model, which re-reads through
-/// `PurchaseClient`. `PaywallView` resolves `Purchases.shared`, which traps with
-/// `fatalError` when the SDK was never configured, so it is built only behind
-/// `isConfigured`.
+/// entitlement — a purchase or restore hands back to the view model, which re-reads through
+/// `PurchaseClient`. Built only behind `isInitialized`: an unconfigured `Superwall.shared`
+/// has no paywall to return.
+///
+/// Every exit closes the cover explicitly. `onRequestDismiss` replaces the SDK's own
+/// dismissal, and a skipped or failed paywall renders nothing of its own — under a
+/// `fullScreenCover` that would otherwise be a blank screen with no way out.
 private struct PaywallSheet: View {
     let viewModel: PaywallGateViewModel
+    let close: () -> Void
 
     var body: some View {
-        if Purchases.isConfigured {
-            PaywallView(displayCloseButton: true)
-                .onPurchaseCompleted { _ in
-                    Task { await viewModel.purchaseCompleted() }
-                }
-                .onRestoreCompleted { _ in
-                    Task { await viewModel.restoreCompleted() }
-                }
+        if Superwall.isInitialized {
+            PaywallView(
+                placement: viewModel.placement.rawValue,
+                onRequestDismiss: { _, result in
+                    close()
+                    switch result {
+                    case .purchased:
+                        Task { await viewModel.purchaseCompleted() }
+                    case .restored:
+                        Task { await viewModel.restoreCompleted() }
+                    case .declined:
+                        break
+                    }
+                },
+                onSkippedView: { reason in
+                    PaywallUnavailableView(message: "No plans are available right now.", close: close)
+                        .onAppear { viewModel.paywallSkipped(reason: reason.description) }
+                },
+                onErrorView: { error in
+                    PaywallUnavailableView(
+                        message: "Plans couldn't be loaded. Check your connection and try again.",
+                        close: close,
+                    )
+                    .onAppear { viewModel.paywallFailedToLoad(error) }
+                },
+            )
         } else {
-            PaywallUnavailableView()
+            PaywallUnavailableView(message: "Purchases aren't available in this build.", close: close)
         }
     }
 }
@@ -227,15 +248,24 @@ private struct PaywallSheet: View {
 private struct PaywallUnavailableView: View {
     @Environment(\.theme) private var theme
 
+    let message: LocalizedStringKey
+    let close: () -> Void
+
     var body: some View {
-        Text("Purchases aren't available in this build.")
-            .font(theme.font.body)
-            .foregroundStyle(theme.color.textSecondary)
-            .multilineTextAlignment(.center)
-            .padding(theme.spacing.xl)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.color.background)
-            .accessibilityIdentifier("paywallUnavailable")
+        VStack(spacing: theme.spacing.md) {
+            Text(message)
+                .font(theme.font.body)
+                .foregroundStyle(theme.color.textSecondary)
+                .multilineTextAlignment(.center)
+
+            Button("Close", action: close)
+                .buttonStyle(.secondary)
+                .accessibilityIdentifier("closePaywallButton")
+        }
+        .padding(theme.spacing.xl)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(theme.color.background)
+        .accessibilityIdentifier("paywallUnavailable")
     }
 }
 

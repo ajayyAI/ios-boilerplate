@@ -17,7 +17,7 @@ Scaffold/
 │   ├── Errors/
 │   ├── FeatureFlags/       FeatureFlagClient, the closed FeatureFlag set
 │   ├── Networking/         HTTPClient
-│   ├── Purchases/
+│   ├── Purchases/          PurchaseClient, the Superwall client, the closed PaywallPlacement set
 │   ├── Reviews/            ReviewPrompter — the rating-prompt budget
 │   └── Storage/            KeyValueStore, UserDefaults and Keychain backed
 ├── Features/

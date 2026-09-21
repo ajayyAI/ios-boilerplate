@@ -11,7 +11,7 @@ import Testing
 ///
 /// The assertions are on concrete types rather than on behaviour because behaviour is
 /// precisely what must not happen — a test that "proved" PostHog was wired by capturing
-/// an event would have to start PostHog to do it. Both real clients defer SDK
+/// an event would have to start PostHog to do it. Every real client defers SDK
 /// initialisation past `init`, so constructing one here reaches no vendor.
 ///
 /// The app module defaults to `MainActor` isolation, which makes `AppConfig`'s
@@ -20,7 +20,7 @@ import Testing
 struct AppEnvironmentTests {
     /// What a clone with no `Secrets.xcconfig` sees: `AppConfig` normalises every absent
     /// or whitespace-only xcconfig value to `nil` before it reaches `AppEnvironment`.
-    private static let unconfigured = AppConfig(revenueCatAPIKey: nil, sentryDSN: nil, postHogAPIKey: nil)
+    private static let unconfigured = AppConfig(superwallAPIKey: nil, sentryDSN: nil, postHogAPIKey: nil)
 
     @Test func `no keys selects the no-op analytics client`() {
         let environment = AppEnvironment(config: Self.unconfigured)
@@ -34,8 +34,23 @@ struct AppEnvironmentTests {
         #expect(environment.crashReporter is NoOpCrashReporter)
     }
 
+    @Test func `no keys selects the no-op purchase client`() {
+        let environment = AppEnvironment(config: Self.unconfigured)
+
+        #expect(environment.purchaseClient is NoOpPurchaseClient)
+        #expect(environment.isPurchasingConfigured == false)
+    }
+
+    @Test func `a Superwall key selects the Superwall purchase client`() {
+        let config = AppConfig(superwallAPIKey: "pk_example", sentryDSN: nil, postHogAPIKey: nil)
+        let environment = AppEnvironment(config: config)
+
+        #expect(environment.purchaseClient is SuperwallPurchaseClient)
+        #expect(environment.isPurchasingConfigured)
+    }
+
     @Test func `a PostHog key selects the PostHog analytics client`() {
-        let config = AppConfig(revenueCatAPIKey: nil, sentryDSN: nil, postHogAPIKey: "phc_example")
+        let config = AppConfig(superwallAPIKey: nil, sentryDSN: nil, postHogAPIKey: "phc_example")
 
         #expect(AppEnvironment(config: config).analyticsClient is PostHogAnalyticsClient)
     }
@@ -49,7 +64,7 @@ struct AppEnvironmentTests {
     /// Flags and events must share one identity, so they come from one instance.
     @Test func `a PostHog key serves flags and analytics from the same instance`() {
         let environment = AppEnvironment(config: AppConfig(
-            revenueCatAPIKey: nil,
+            superwallAPIKey: nil,
             sentryDSN: nil,
             postHogAPIKey: "phc_example",
         ))
@@ -62,7 +77,7 @@ struct AppEnvironmentTests {
 
     @Test func `a Sentry DSN selects the Sentry crash reporter`() {
         let config = AppConfig(
-            revenueCatAPIKey: nil,
+            superwallAPIKey: nil,
             sentryDSN: "https://examplePublicKey@o0.ingest.sentry.io/0",
             postHogAPIKey: nil,
         )
@@ -72,7 +87,7 @@ struct AppEnvironmentTests {
 
     /// Each key is read independently: configuring one vendor must not switch on another.
     @Test func `configuring one vendor leaves the other no-op`() {
-        let config = AppConfig(revenueCatAPIKey: nil, sentryDSN: nil, postHogAPIKey: "phc_example")
+        let config = AppConfig(superwallAPIKey: nil, sentryDSN: nil, postHogAPIKey: "phc_example")
         let environment = AppEnvironment(config: config)
 
         #expect(environment.analyticsClient is PostHogAnalyticsClient)

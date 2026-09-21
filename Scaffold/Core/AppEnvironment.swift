@@ -25,7 +25,7 @@ nonisolated struct AppEnvironment: Sendable {
     let purchaseClient: any PurchaseClient
 
     /// Whether there is anything to sell. Distinct from entitlement: a build with no
-    /// RevenueCat key has no purchasable product, so a hard paywall would be a dead end
+    /// Superwall key has no paywall to present, so a hard paywall would be a dead end
     /// with no exit. The gate downgrades to a dismissible presentation in that case.
     let isPurchasingConfigured: Bool
 
@@ -37,7 +37,7 @@ nonisolated struct AppEnvironment: Sendable {
         crashReporter = Self.makeCrashReporter(config: config)
         keyValueStore = UserDefaultsKeyValueStore(appGroupID: config.appGroupID)
         purchaseClient = Self.makePurchaseClient(config: config)
-        isPurchasingConfigured = config.revenueCatAPIKey != nil
+        isPurchasingConfigured = config.superwallAPIKey != nil
     }
 
     /// One PostHog instance serves analytics and flags, so both read the same identity.
@@ -47,10 +47,10 @@ nonisolated struct AppEnvironment: Sendable {
     }
 
     private static func makePurchaseClient(config: AppConfig) -> any PurchaseClient {
-        guard let apiKey = config.revenueCatAPIKey else {
+        guard let apiKey = config.superwallAPIKey else {
             return NoOpPurchaseClient()
         }
-        return RevenueCatPurchaseClient(apiKey: apiKey)
+        return SuperwallPurchaseClient(apiKey: apiKey)
     }
 
     private static func makeCrashReporter(config: AppConfig) -> any CrashReporter {

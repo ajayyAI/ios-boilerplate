@@ -13,7 +13,7 @@ protocol PurchaseClient: Sendable {
     /// Configures the underlying SDK. Safe to call once at launch.
     func start()
 
-    /// Current entitlement, refreshed from the store.
+    /// Current entitlement. Never throws; see `EntitlementRefreshing` for the read that can.
     func entitlement() async -> Entitlement
 
     /// Restores prior purchases for this Apple ID.
@@ -41,7 +41,7 @@ enum Entitlement: Equatable, Sendable {
     }
 }
 
-/// Used whenever no RevenueCat key is configured.
+/// Used whenever no Superwall key is configured.
 ///
 /// Reports `notSubscribed` rather than granting access: an unconfigured build must
 /// not silently unlock paid features. `HARD_PAYWALL` behaviour is decided by the

@@ -50,7 +50,7 @@ integration, keep it true.
 | `DEVELOPMENT_TEAM` | developer.apple.com → Membership → Team ID | Signing must be set manually in Xcode |
 | `APP_BUNDLE_ID` | You choose it | — (has a default) |
 | `API_BASE_URL` | Your backend's base URL | `UserRemoteDataSource` returns sample data and makes no request |
-| `REVENUECAT_API_KEY` | RevenueCat → Project settings → API keys → Apple App Store | Purchases no-op; nobody is entitled |
+| `SUPERWALL_API_KEY` | Superwall → Settings → Keys → Public API Key (`pk_…`) | Purchases no-op; nobody is entitled |
 | `SENTRY_DSN` | Sentry → Settings → Projects → Client Keys | No crash reporting |
 | `POSTHOG_API_KEY` | PostHog → Project settings → Project API key | No analytics |
 | `POSTHOG_HOST` | Your PostHog region | Defaults to EU cloud |
@@ -89,7 +89,7 @@ contributors. It does nothing for the shipped binary. Anything baked in through
 disassembler, or a proxy. OWASP MAS covers this as
 [MASWE-0005](https://mas.owasp.org/MASWE/MASVS-AUTH/MASWE-0005/).
 
-The keys in the table above are *publishable client keys* — RevenueCat's SDK key,
+The keys in the table above are *publishable client keys* — Superwall's public API key,
 Sentry's DSN, PostHog's project key are all designed to ship inside clients, and
 extraction is not a vulnerability for them.
 

@@ -21,7 +21,7 @@ import Foundation
 /// behind a backend proxy with short-lived tokens — see `docs/configuration.md`.
 nonisolated struct AppConfig: Sendable {
     let apiBaseURL: URL?
-    let revenueCatAPIKey: String?
+    let superwallAPIKey: String?
     let sentryDSN: String?
     let postHogAPIKey: String?
     let postHogHost: String
@@ -33,7 +33,7 @@ nonisolated struct AppConfig: Sendable {
     init(bundle: Bundle = .main) {
         self.init(
             apiBaseURL: Self.value(for: .apiBaseURL, in: bundle).flatMap(URL.init(string:)),
-            revenueCatAPIKey: Self.value(for: .revenueCatAPIKey, in: bundle),
+            superwallAPIKey: Self.value(for: .superwallAPIKey, in: bundle),
             sentryDSN: Self.value(for: .sentryDSN, in: bundle),
             postHogAPIKey: Self.value(for: .postHogAPIKey, in: bundle),
             postHogHost: Self.value(for: .postHogHost, in: bundle) ?? Self.postHogDefaultHost,
@@ -43,14 +43,14 @@ nonisolated struct AppConfig: Sendable {
 
     init(
         apiBaseURL: URL? = nil,
-        revenueCatAPIKey: String?,
+        superwallAPIKey: String?,
         sentryDSN: String?,
         postHogAPIKey: String?,
         postHogHost: String = AppConfig.postHogDefaultHost,
         appGroupID: String? = nil,
     ) {
         self.apiBaseURL = apiBaseURL
-        self.revenueCatAPIKey = revenueCatAPIKey
+        self.superwallAPIKey = superwallAPIKey
         self.sentryDSN = sentryDSN
         self.postHogAPIKey = postHogAPIKey
         self.postHogHost = postHogHost
@@ -61,7 +61,7 @@ nonisolated struct AppConfig: Sendable {
     /// matching entry to `Info.plist` and `Config/Secrets.example.xcconfig`.
     enum Key: String {
         case apiBaseURL = "APIBaseURL"
-        case revenueCatAPIKey = "RevenueCatAPIKey"
+        case superwallAPIKey = "SuperwallAPIKey"
         case sentryDSN = "SentryDSN"
         case postHogAPIKey = "PostHogAPIKey"
         case postHogHost = "PostHogHost"

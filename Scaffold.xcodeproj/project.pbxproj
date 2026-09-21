@@ -8,8 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D58BA4CE2BEE6501000D8420 /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = D58BA4CD2BEE6501000D8420 /* FactoryKit */; };
-		AA0000000000000000000003 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000002 /* RevenueCat */; };
-		AA0000000000000000000005 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000004 /* RevenueCatUI */; };
+		AA0000000000000000000003 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000002 /* SuperwallKit */; };
 		AA0000000000000000000008 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = AA0000000000000000000007 /* Sentry */; };
 		AA000000000000000000000B /* PostHog in Frameworks */ = {isa = PBXBuildFile; productRef = AA000000000000000000000A /* PostHog */; };
 /* End PBXBuildFile section */
@@ -79,8 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				D58BA4CE2BEE6501000D8420 /* FactoryKit in Frameworks */,
-				AA0000000000000000000003 /* RevenueCat in Frameworks */,
-				AA0000000000000000000005 /* RevenueCatUI in Frameworks */,
+				AA0000000000000000000003 /* SuperwallKit in Frameworks */,
 				AA0000000000000000000008 /* Sentry in Frameworks */,
 				AA000000000000000000000B /* PostHog in Frameworks */,
 			);
@@ -152,8 +150,7 @@
 			name = Scaffold;
 			packageProductDependencies = (
 				D58BA4CD2BEE6501000D8420 /* FactoryKit */,
-				AA0000000000000000000002 /* RevenueCat */,
-				AA0000000000000000000004 /* RevenueCatUI */,
+				AA0000000000000000000002 /* SuperwallKit */,
 				AA0000000000000000000007 /* Sentry */,
 				AA000000000000000000000A /* PostHog */,
 			);
@@ -239,7 +236,7 @@
 			mainGroup = D5284F232B57C6B600BB32E7;
 			packageReferences = (
 				D58BA4CC2BEE6501000D8420 /* XCRemoteSwiftPackageReference "Factory" */,
-				AA0000000000000000000001 /* XCRemoteSwiftPackageReference "RevenueCat" */,
+				AA0000000000000000000001 /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
 				AA0000000000000000000006 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 				AA0000000000000000000009 /* XCRemoteSwiftPackageReference "posthog-ios" */,
 			);
@@ -612,12 +609,12 @@
 				minimumVersion = 3.3.2;
 			};
 		};
-		AA0000000000000000000001 /* XCRemoteSwiftPackageReference "RevenueCat" */ = {
+		AA0000000000000000000001 /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			repositoryURL = "https://github.com/superwall/Superwall-iOS.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.88.0;
+				minimumVersion = 4.16.3;
 			};
 		};
 		AA0000000000000000000006 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
@@ -644,15 +641,10 @@
 			package = D58BA4CC2BEE6501000D8420 /* XCRemoteSwiftPackageReference "Factory" */;
 			productName = FactoryKit;
 		};
-		AA0000000000000000000002 /* RevenueCat */ = {
+		AA0000000000000000000002 /* SuperwallKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000001 /* XCRemoteSwiftPackageReference "RevenueCat" */;
-			productName = RevenueCat;
-		};
-		AA0000000000000000000004 /* RevenueCatUI */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AA0000000000000000000001 /* XCRemoteSwiftPackageReference "RevenueCat" */;
-			productName = RevenueCatUI;
+			package = AA0000000000000000000001 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
 		};
 		AA0000000000000000000007 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -25,6 +25,9 @@ final class PaywallGateViewModel {
     /// stays locked either way.
     let isPaywallAvailable: Bool
 
+    /// Which campaign decides the paywall this gate presents.
+    let placement: PaywallPlacement
+
     private let purchases: any PurchaseClient
     private let crashReporter: any CrashReporter
 
@@ -33,11 +36,13 @@ final class PaywallGateViewModel {
         crashReporter: any CrashReporter = NoOpCrashReporter(),
         hardPaywall: Bool = false,
         isPaywallAvailable: Bool = true,
+        placement: PaywallPlacement = .premiumFeature,
     ) {
         self.purchases = purchases
         self.crashReporter = crashReporter
         self.hardPaywall = hardPaywall
         self.isPaywallAvailable = isPaywallAvailable
+        self.placement = placement
     }
 
     /// A hard paywall with nothing to sell is a dead end, so an unconfigured build gets the
@@ -64,9 +69,9 @@ final class PaywallGateViewModel {
         await load()
     }
 
-    /// Called when the paywall reports a completed purchase. The callback carries a
-    /// `CustomerInfo`, but trusting it would let the SDK decide entitlement behind the
-    /// client's back, and the identifier mapping lives in the client.
+    /// Called when the paywall reports a completed purchase. The callback names the product
+    /// bought, but trusting it would let the SDK decide entitlement behind the client's
+    /// back, and the entitlement mapping lives in the client.
     func purchaseCompleted() async {
         await readEntitlement()
     }
@@ -75,6 +80,18 @@ final class PaywallGateViewModel {
     /// succeeded, not that anything was restored, so the answer still comes from a read.
     func restoreCompleted() async {
         await readEntitlement()
+    }
+
+    /// The campaign chose to show nothing — a holdout group, no audience match, or a
+    /// placement missing from the dashboard. The last is a misconfiguration and the first
+    /// two are not, but none is an error, so it is logged rather than reported.
+    func paywallSkipped(reason: String) {
+        let placement = placement.rawValue
+        Log.purchases.notice("Paywall skipped for \(placement): \(reason)")
+    }
+
+    func paywallFailedToLoad(_ error: Error) {
+        crashReporter.report(error, context: "PaywallGate.presentPaywall")
     }
 
     /// The gate's own restore affordance, for the screen shown when the paywall is dismissed.
