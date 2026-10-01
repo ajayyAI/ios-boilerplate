@@ -606,7 +606,7 @@
 			repositoryURL = "https://github.com/hmlongco/Factory.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 3.4.0;
+				minimumVersion = 3.4.1;
 			};
 		};
 		AA0000000000000000000001 /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
