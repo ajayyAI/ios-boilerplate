@@ -1,0 +1,96 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "A worked example of the data layer: a use case, a repository and two data sources, rendered through one state enum." : {
+
+    },
+    "Close" : {
+
+    },
+    "Couldn't check your subscription" : {
+
+    },
+    "Couldn't load" : {
+
+    },
+    "Example user" : {
+
+    },
+    "Home" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home"
+          }
+        }
+      }
+    },
+    "Loading" : {
+
+    },
+    "No plans are available right now." : {
+
+    },
+    "No user" : {
+
+    },
+    "Nothing loaded yet" : {
+
+    },
+    "Ok" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oké"
+          }
+        }
+      }
+    },
+    "Plans couldn't be loaded. Check your connection and try again." : {
+
+    },
+    "Premium feature" : {
+
+    },
+    "Purchases aren't available in this build." : {
+
+    },
+    "Refresh" : {
+      "localizations" : {
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vernieuwen"
+          }
+        }
+      }
+    },
+    "Restore purchases" : {
+
+    },
+    "See plans" : {
+
+    },
+    "Subscribe to unlock this." : {
+
+    },
+    "The request failed (%lld)." : {
+
+    },
+    "The server is having trouble. Try again shortly." : {
+
+    },
+    "The server sent a response the app could not read." : {
+
+    },
+    "Try again" : {
+
+    },
+    "You are not allowed to see this." : {
+
+    }
+  },
+  "version" : "1.0"
+}

@@ -1,0 +1,59 @@
+name: Feature request
+description: Propose a change to the starter.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What goes wrong today, and for whom.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What you want the starter to do instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What you tried
+      description: Workarounds, alternatives you ruled out, and why they were not enough.
+    validations:
+      required: true
+
+  - type: textarea
+    id: starter-or-app
+    attributes:
+      label: Why the starter and not the app
+      description: >-
+        This is the main reason a request gets declined. Every app cloned from this repo
+        gets what lands here, so product behaviour and app-specific choices belong in the
+        app you build, not in the template. Make the case that every app needs this.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: dependency
+    attributes:
+      label: Does this add a dependency?
+      options:
+        - "No"
+        - "Yes — a Swift package"
+        - "Yes — a Homebrew tool"
+        - "Yes — a vendor SDK and a new key"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: invariants
+    attributes:
+      label: Invariants
+      description: See [CONTRIBUTING.md](https://github.com/ajayyAI/ios-boilerplate/blob/main/CONTRIBUTING.md).
+      options:
+        - label: A clone with no `Config/Secrets.xcconfig` would still build, run and test green and contact no vendor.
+        - label: This does not make a failed entitlement read grant access.

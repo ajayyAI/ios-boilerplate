@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # CI builds with the toolchain developers use. Xcode 27 ships only on the
+  # `xcode-27` image, which GitHub still labels preview (no SLA); the GA `macos-26`
+  # image stops at Xcode 26.6. If the preview image misbehaves, fall back to
+  # `runs-on: macos-26` with XCODE_VERSION '26.6' — the code still builds there,
+  # but it no longer proves anything about the iOS 27 SDK.
+  XCODE_VERSION: '27.0'
+
+jobs:
+  check:
+    name: make check
+    runs-on: xcode-27
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+
+      - name: Cache Homebrew tools
+        uses: actions/cache@v6
+        with:
+          path: ~/Library/Caches/Homebrew
+          key: ${{ runner.os }}-brew-${{ hashFiles('Brewfile') }}
+
+      # The image's Homebrew index lags upstream by days, and `brew bundle` only knows
+      # versions that index lists, so without the refresh a freshly bumped pin fails
+      # `make doctor` as "older than pinned".
+      - name: Install pinned tools
+        run: |
+          brew update --quiet
+          brew bundle
+
+      - name: Cache Swift packages
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/SourcePackages
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: ${{ runner.os }}-spm-
+
+      # Retried: Sentry ships as binary xcframeworks and SwiftPM downloads every one
+      # in the package, so a single flaky GitHub release download otherwise fails the
+      # whole gate on nothing the code did.
+      - name: Resolve Swift packages
+        run: |
+          for attempt in 1 2 3; do
+            xcodebuild -project Scaffold.xcodeproj -scheme Scaffold \
+              -onlyUsePackageVersionsFromResolvedFile -resolvePackageDependencies \
+              -clonedSourcePackagesDirPath "${{ runner.temp }}/SourcePackages" && exit 0
+            echo "resolve attempt $attempt failed; retrying"
+            sleep 15
+          done
+          exit 1
+
+      # Runs the exact same gate developers run locally. One definition, two callers.
+      - name: Run the gate
+        run: make check
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: ${{ failure() }}
+        with:
+          name: TestResults-${{ github.sha }}.xcresult
+          path: TestResults.xcresult
+          retention-days: 7
